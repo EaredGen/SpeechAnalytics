@@ -187,7 +187,7 @@
         public System.Windows.Forms.TextBox textBoxDirectionForReading;
         public System.Windows.Forms.TextBox textBoxDirectionForWritting;
         private System.Windows.Forms.Button buttonWrite;
-        private System.Windows.Forms.ProgressBar progressBar;
+        public System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.RichTextBox richTextBoxAllThemes;
         public System.Windows.Forms.RichTextBox richTextBoxSelectedThemes;
         private System.Windows.Forms.CheckBox checkBoxAllowChangeThemes;

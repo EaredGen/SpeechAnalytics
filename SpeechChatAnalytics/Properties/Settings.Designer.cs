@@ -34,17 +34,5 @@ namespace SpeechChatAnalytics.Properties {
                 this["Themes"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Actual {
-            get {
-                return ((string)(this["Actual"]));
-            }
-            set {
-                this["Actual"] = value;
-            }
-        }
     }
 }

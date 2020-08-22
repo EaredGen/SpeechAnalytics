@@ -1,110 +1,96 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using OfficeOpenXml;
 using System.IO;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Office.Interop.Excel;
-using _Excel = Microsoft.Office.Interop.Excel;
-using SpeechChatAnalytics.Logic;
-using System.Data;
-using System.Diagnostics;
-using System.Windows.Forms;
 
-namespace SpeechChatAnalytics.GUI
+
+namespace SpeechChatAnalytics.Logic
 {
     class Reader
     {
-        private string path;
-        private string selectedThemes;
-        private _Application excel;
-        private Workbook wb;
-        private Worksheet ws;
-        private Range lastCell;
-        private string[,] list;
-        List<Theme> listOfThemesAndRelevantWords;
-        private Queue<Interaction> results;
         MainForm form;
+        string[,] matrix;
+        List<Theme> listOfThemes;
+        private Queue<Interaction> results;
 
-
-        public Reader(MainForm form, string path, string selectedThemes)
+        public Reader(MainForm form)
         {
-            excel = new _Excel.Application();
-            listOfThemesAndRelevantWords = new List<Theme>();
-            results = new Queue<Interaction>();
-            this.path = path;
             this.form = form;
-            this.selectedThemes = selectedThemes;
+            listOfThemes = new List<Theme>();
+            results = new Queue<Interaction>();
+            OpenExcel();
+            AnalyseThemes();
+            Analysis();
+            SendResult();
         }
 
-        public void OpenExcel()
+        private void OpenExcel()
         {
-            try
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            FileInfo fileInfo = new FileInfo(form.textBoxDirectionForReading.Text);
+            using (ExcelPackage ep = new ExcelPackage(fileInfo))
             {
-                wb = excel.Workbooks.Open(path);
-                ws = wb.Worksheets[1];
-                lastCell = excel.Cells.SpecialCells(_Excel.XlCellType.xlCellTypeLastCell);
-                list = new string[lastCell.Column,lastCell.Row];
-            }
-            catch (Exception)
-            {
-                excel.Quit();
-            }
-        }
+                ExcelWorksheet ew = ep.Workbook.Worksheets[0];
+                matrix = new string[ew.Dimension.End.Column, ew.Dimension.End.Row];
 
-        public void ReadExcel()
-        {
-            try
-            {
-                for (int i = 4; i < lastCell.Row; i++)
+                for (int i = 1; i <= ew.Dimension.End.Column; i++) 
                 {
-                    foreach (var theme in listOfThemesAndRelevantWords)
+                    for (int j = 1; j <= ew.Dimension.End.Row; j++) 
                     {
-                        foreach (var word in theme.words)
-                        {
-                            if (CheckChat(word,ws.Cells[i, 25].Text.ToString()))
-                            {
-                                // добавить в выгрузку по теме, начать смотреть другую тему
-                                results.Enqueue(new Interaction(
-                                    ws.Cells[i,1].Text.ToString(),
-                                    ws.Cells[i, 2].Text.ToString(),
-                                    ws.Cells[i, 3].Text.ToString(),
-                                    ws.Cells[i, 4].Text.ToString(),
-                                    ws.Cells[i, 5].Text.ToString(),
-                                    ws.Cells[i, 6].Text.ToString(),
-                                    ws.Cells[i, 7].Text.ToString(),
-                                    ws.Cells[i, 8].Text.ToString(),
-                                    ws.Cells[i, 9].Text.ToString(),
-                                    ws.Cells[i, 10].Text.ToString(), 
-                                    ws.Cells[i, 11].Text.ToString(),
-                                    ws.Cells[i, 12].Text.ToString(),
-                                    ws.Cells[i, 13].Text.ToString(),
-                                    ws.Cells[i, 14].Text.ToString(),
-                                    ws.Cells[i, 15].Text.ToString(),
-                                    ws.Cells[i, 16].Text.ToString(),
-                                    ws.Cells[i, 17].Text.ToString(),
-                                    ws.Cells[i, 18].Text.ToString(),
-                                    ws.Cells[i, 19].Text.ToString(),
-                                    ws.Cells[i, 20].Text.ToString(),
-                                    ws.Cells[i, 21].Text.ToString(),
-                                    ws.Cells[i, 22].Text.ToString(),
-                                    ws.Cells[i, 23].Text.ToString(),
-                                    ws.Cells[i, 24].Text.ToString(),
-                                    ws.Cells[i, 25].Text.ToString()));
-                                break;
-                            }
-                        }
+                        matrix[i-1, j-1] = ew.Cells[j, i].Value == null ? string.Empty : ew.Cells[j, i].Value.ToString();
                     }
-                    
                 }
             }
-            catch(Exception ex)
+        }
+
+        private void Analysis()
+        {
+            form.progressBar.Minimum = 0;
+            form.progressBar.Maximum = matrix.GetLength(1);
+            form.progressBar.Step = 1;
+            for (int i = 2; i < matrix.GetLength(1)-2; i++)
             {
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                excel.Quit();
+                foreach(var theme in listOfThemes)
+                {
+                    foreach (var word in theme.words)
+                    {
+                        if (CheckChat(word, matrix[24,i]))
+                        {
+                            results.Enqueue(new Interaction(
+                                theme.name,
+                                matrix[0,i],
+                                matrix[1, i],
+                                matrix[2, i],
+                                matrix[3, i],
+                                matrix[4, i],
+                                matrix[5, i],
+                                matrix[6, i],
+                                matrix[7, i],
+                                matrix[8, i],
+                                matrix[9, i],
+                                matrix[10, i],
+                                matrix[11, i],
+                                matrix[12, i],
+                                matrix[13, i],
+                                matrix[14, i],
+                                matrix[15, i],
+                                matrix[16, i],
+                                matrix[17, i],
+                                matrix[18, i],
+                                matrix[19, i],
+                                matrix[20, i],
+                                matrix[21, i],
+                                matrix[22, i],
+                                matrix[23, i],
+                                matrix[24, i]));
+                            break;
+                        }
+                    }
+                }
+                form.progressBar.PerformStep();
             }
         }
 
@@ -116,61 +102,62 @@ namespace SpeechChatAnalytics.GUI
             bool keyWord = false;
             List<string> listOfNeededPhrases = new List<string>();
 
-            for (int i = 0; i < selectedThemes.Length; i++)
+            for (int i = 0; i < form.richTextBoxSelectedThemes.Text.ToString().Length; i++)
             {
-                if (selectedThemes[i] == '>')
+                if (form.richTextBoxSelectedThemes.Text.ToString()[i] == '>')
                 {
                     keyTheme = true;
                     continue;
                 }
-                if (selectedThemes[i] == '<')
+                if (form.richTextBoxSelectedThemes.Text.ToString()[i] == '<')
                 {
                     keyTheme = false;
                     continue;
                 }
                 if (keyTheme)
                 {
-                    theme.Append(selectedThemes[i]);
+                    theme.Append(form.richTextBoxSelectedThemes.Text.ToString()[i]);
                     continue;
                 }
-                if ((selectedThemes[i] == '\n') && (selectedThemes[i - 1] == '<'))
+                if ((form.richTextBoxSelectedThemes.Text.ToString()[i] == '\n') && (form.richTextBoxSelectedThemes.Text.ToString()[i - 1] == '<'))
                 {
                     keyWord = true;
                     continue;
                 }
-                if (selectedThemes[i] == ',')
+                if (form.richTextBoxSelectedThemes.Text.ToString()[i] == ',')
                 {
                     listOfNeededPhrases.Add(neededPhrase.ToString());
                     neededPhrase.Clear();
                     continue;
                 }
-                if (selectedThemes[i] == '.')
+                if (form.richTextBoxSelectedThemes.Text.ToString()[i] == '.')
                 {
                     keyWord = false;
                     listOfNeededPhrases.Add(neededPhrase.ToString());
-                    listOfThemesAndRelevantWords.Add(new Theme(theme.ToString(), listOfNeededPhrases));
+                    listOfThemes.Add(new Theme(theme.ToString(), listOfNeededPhrases));
                     neededPhrase.Clear();
                     theme.Clear();
                     continue;
                 }
                 if (keyWord)
                 {
-                    neededPhrase.Append(selectedThemes[i]);
+                    neededPhrase.Append(form.richTextBoxSelectedThemes.Text.ToString()[i]);
                     continue;
                 }
             }
         }
 
-        private bool CheckChat(string neededWord,string chat)
+        private bool CheckChat(string neededWord, string chat)
         {
-            if (chat.Contains(neededWord))
+            if (chat.ToLower().Contains(neededWord))
                 return true;
             return false;
         }
 
-        public void SendResult()
+        private void SendResult()
         {
             form.results = results;
         }
+
     }
 }

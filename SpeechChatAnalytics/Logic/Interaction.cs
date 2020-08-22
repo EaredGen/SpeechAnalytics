@@ -8,10 +8,11 @@ namespace SpeechChatAnalytics.Logic
 {
     public class Interaction
     {
+        public string nameOfTheme;
         public string typeOfCommunication;
         public string sessionID;
         public string dateOfStartInteraction;
-        public string dateIfAdmissionInteraction;
+        public string dateOfAdmissionInteraction;
         public string dateOfStartProcessing;
         public string dateOfFinishProcessing;
         public string chatDurationGeneral;
@@ -34,19 +35,20 @@ namespace SpeechChatAnalytics.Logic
         public string assessmentCommentary;
         public string textOfInteraction;
 
-        public Interaction(string typeOfCommunication, string sessionID, string dateOfStartInteraction, 
-            string dateIfAdmissionInteraction, string dateOfStartProcessing, string dateOfFinishProcessing, 
-            string chatDurationGeneral, string chatDurationWithOperator, string clientNumber, 
-            string clientID, string botPresence, string operatorRole, string operatorSiabelLogin, 
+        public Interaction(string theme, string typeOfCommunication, string sessionID, string dateOfStartInteraction,
+            string dateIfAdmissionInteraction, string dateOfStartProcessing, string dateOfFinishProcessing,
+            string chatDurationGeneral, string chatDurationWithOperator, string clientNumber,
+            string clientID, string botPresence, string operatorRole, string operatorSiabelLogin,
             string operatorGenesisLogin, string operatorFCs, string operatorGroupe, string apexUnit,
-            string clientWaitingDuration, string operatorFirstReaction, string durationLastMessage, 
-            string operatorAverageTimeAnswer, string clientAverageTimeAnswer, string assessmentOfOperator, 
+            string clientWaitingDuration, string operatorFirstReaction, string durationLastMessage,
+            string operatorAverageTimeAnswer, string clientAverageTimeAnswer, string assessmentOfOperator,
             string assessmentCommentary, string textOfInteraction)
         {
+            this.nameOfTheme = theme;
             this.typeOfCommunication = typeOfCommunication;
             this.sessionID = sessionID;
             this.dateOfStartInteraction = dateOfStartInteraction;
-            this.dateIfAdmissionInteraction = dateIfAdmissionInteraction;
+            this.dateOfAdmissionInteraction = dateIfAdmissionInteraction;
             this.dateOfStartProcessing = dateOfStartProcessing;
             this.dateOfFinishProcessing = dateOfFinishProcessing;
             this.chatDurationGeneral = chatDurationGeneral;

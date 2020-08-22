@@ -4,10 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,14 +15,16 @@ namespace SpeechChatAnalytics
 {
     public partial class MainForm : Form
     {
-        private OpenFileDialog ofd;
+        Process thisProcess;
         public Queue<Interaction> results;
+        private OpenFileDialog ofd;
         public MainForm()
         {
+            this.thisProcess = Process.GetCurrentProcess();
+            thisProcess.PriorityClass = ProcessPriorityClass.High;
             InitializeComponent();
             ofd = new OpenFileDialog();
             richTextBoxAllThemes.Text = Properties.Settings.Default.Themes;
-            results = new Queue<Interaction>();
         }
 
         private void buttonChooseDirection_MouseClick(object sender, MouseEventArgs e)
@@ -66,20 +68,13 @@ namespace SpeechChatAnalytics
 
         private void buttonRead_MouseClick(object sender, MouseEventArgs e)
         {
-            Reader reader = new Reader(this,this.textBoxDirectionForReading.Text.ToString(), this.richTextBoxSelectedThemes.Text.ToString());
-            reader.OpenExcel();
-            reader.AnalyseThemes();
-            reader.ReadExcel();
-            reader.SendResult();
-            MessageBox.Show(results.Count.ToString());
+            Reader reader = new Reader(this);
+            MessageBox.Show($"Кол-во по тематике {results.Count}");
         }
 
         private void buttonWrite_MouseClick(object sender, MouseEventArgs e)
         {
             Writer writer = new Writer(this);
-            writer.OpenExcel();
-            writer.Write();
-            Dispose();
         }
     }
 }

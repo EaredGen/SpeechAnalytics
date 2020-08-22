@@ -1,97 +1,80 @@
-﻿using System;
+﻿using OfficeOpenXml;
+using System.IO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Microsoft.Office.Interop.Excel;
-using _Excel = Microsoft.Office.Interop.Excel;
+using SpeechChatAnalytics.Logic;
 
-namespace SpeechChatAnalytics.Logic
+namespace SpeechChatAnalytics.GUI
 {
     class Writer
     {
         private MainForm form;
-        private _Application excel;
-        private Workbook wb;
-        private Worksheet ws;
-        private Range lastCell;
-        private string[,] list;
 
         public Writer(MainForm form)
         {
             this.form = form;
-            excel = new _Excel.Application();
+            this.form.progressBar.Value = 0;
+            Write();
         }
 
-        public void Write()
+        private void Write()
         {
-            try
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            FileInfo fileInfo = new FileInfo(form.textBoxDirectionForWritting.Text);
+
+            using (ExcelPackage ep = new ExcelPackage(fileInfo))
             {
+                form.progressBar.Minimum = 0;
+                form.progressBar.Maximum = form.results.Count;
+                form.progressBar.Step = 1;
                 Interaction interaction;
+                ExcelWorksheet ew = ep.Workbook.Worksheets[0];
                 int counter = 2;
                 while (form.results.Count != 0)
                 {
                     try
                     {
                         interaction = form.results.Dequeue();
-                        ws.Cells[counter, 1] = String.Format(interaction.typeOfCommunication.ToString());
-                        ws.Cells[counter, 2] = String.Format(interaction.sessionID.ToString());
-                        ws.Cells[counter, 3] = String.Format(interaction.dateOfStartInteraction.ToString());
-                        ws.Cells[counter, 4] = String.Format(interaction.dateIfAdmissionInteraction.ToString());
-                        ws.Cells[counter, 5] = String.Format(interaction.dateOfStartProcessing.ToString());
-                        ws.Cells[counter, 6] = String.Format(interaction.dateOfFinishProcessing.ToString());
-                        ws.Cells[counter, 7] = String.Format(interaction.chatDurationGeneral.ToString());
-                        ws.Cells[counter, 8] = String.Format(interaction.chatDurationWithOperator.ToString());
-                        ws.Cells[counter, 9] = String.Format(interaction.clientNumber.ToString());
-                        ws.Cells[counter, 10] = String.Format(interaction.clientID.ToString());
-                        ws.Cells[counter, 11] = String.Format(interaction.botPresence.ToString());
-                        ws.Cells[counter, 12] = String.Format(interaction.operatorRole.ToString());
-                        ws.Cells[counter, 13] = String.Format(interaction.operatorSiabelLogin.ToString());
-                        ws.Cells[counter, 14] = String.Format(interaction.operatorGenesisLogin.ToString());
-                        ws.Cells[counter, 15] = String.Format(interaction.operatorFCs.ToString());
-                        ws.Cells[counter, 16] = String.Format(interaction.operatorGroupe.ToString());
-                        ws.Cells[counter, 17] = String.Format(interaction.apexUnit.ToString());
-                        ws.Cells[counter, 18] = String.Format(interaction.clientWaitingDuration.ToString());
-                        ws.Cells[counter, 19] = String.Format(interaction.operatorFirstReaction.ToString());
-                        ws.Cells[counter, 20] = String.Format(interaction.durationLastMessage.ToString());
-                        ws.Cells[counter, 21] = String.Format(interaction.operatorAverageTimeAnswer.ToString());
-                        ws.Cells[counter, 22] = String.Format(interaction.clientAverageTimeAnswer.ToString());
-                        ws.Cells[counter, 23] = String.Format(interaction.assessmentOfOperator.ToString());
-                        ws.Cells[counter, 24] = String.Format(interaction.assessmentCommentary.ToString());
-                        ws.Cells[counter, 25] = String.Format(interaction.textOfInteraction.ToString());
+                        ew.Cells[counter, 1].Value = String.Format(interaction.nameOfTheme);
+                        ew.Cells[counter, 2].Value = String.Format(interaction.typeOfCommunication);
+                        ew.Cells[counter, 3].Value = String.Format(interaction.sessionID);
+                        ew.Cells[counter, 4].Value = String.Format(interaction.dateOfStartInteraction);
+                        ew.Cells[counter, 5].Value = String.Format(interaction.dateOfAdmissionInteraction);
+                        ew.Cells[counter, 6].Value = String.Format(interaction.dateOfStartProcessing);
+                        ew.Cells[counter, 7].Value = String.Format(interaction.dateOfFinishProcessing);
+                        ew.Cells[counter, 8].Value = String.Format(interaction.chatDurationGeneral);
+                        ew.Cells[counter, 9].Value = String.Format(interaction.chatDurationWithOperator);
+                        ew.Cells[counter, 10].Value = String.Format(interaction.clientNumber);
+                        ew.Cells[counter, 11].Value = String.Format(interaction.clientID);
+                        ew.Cells[counter, 12].Value = String.Format(interaction.botPresence);
+                        ew.Cells[counter, 13].Value = String.Format(interaction.operatorRole);
+                        ew.Cells[counter, 14].Value = String.Format(interaction.operatorSiabelLogin);
+                        ew.Cells[counter, 15].Value = String.Format(interaction.operatorGenesisLogin);
+                        ew.Cells[counter, 16].Value = String.Format(interaction.operatorFCs);
+                        ew.Cells[counter, 17].Value = String.Format(interaction.operatorGroupe);
+                        ew.Cells[counter, 18].Value = String.Format(interaction.apexUnit);
+                        ew.Cells[counter, 19].Value = String.Format(interaction.clientWaitingDuration);
+                        ew.Cells[counter, 20].Value = String.Format(interaction.operatorFirstReaction);
+                        ew.Cells[counter, 21].Value = String.Format(interaction.durationLastMessage);
+                        ew.Cells[counter, 22].Value = String.Format(interaction.operatorAverageTimeAnswer);
+                        ew.Cells[counter, 23].Value = String.Format(interaction.clientAverageTimeAnswer);
+                        ew.Cells[counter, 24].Value = String.Format(interaction.assessmentOfOperator);
+                        ew.Cells[counter, 25].Value = String.Format(interaction.assessmentCommentary);
+                        ew.Cells[counter, 26].Value = String.Format(interaction.textOfInteraction);
                         counter++;
+                        form.progressBar.PerformStep();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
                         continue;
                     }
                 }
-            }
-            catch (Exception exc)
-            {
-                MessageBox.Show(exc.Message);
-            }
-            finally
-            {
-                excel.Quit();
+                ep.SaveAs(fileInfo);
             }
         }
 
-        public void OpenExcel()
-        {
-            try
-            {
-                wb = excel.Workbooks.Open(form.textBoxDirectionForWritting.Text);
-                ws = wb.Worksheets[1];
-                lastCell = excel.Cells.SpecialCells(_Excel.XlCellType.xlCellTypeLastCell);
-                list = new string[lastCell.Column, lastCell.Row];
-            }
-            catch (Exception)
-            {
-                excel.Quit();
-            }
-        }
     }
 }
