@@ -78,6 +78,7 @@
             this.buttonWrite.TabIndex = 3;
             this.buttonWrite.Text = "Записать";
             this.buttonWrite.UseVisualStyleBackColor = true;
+            this.buttonWrite.MouseClick += new System.Windows.Forms.MouseEventHandler(this.buttonWrite_MouseClick);
             // 
             // progressBar
             // 
@@ -184,7 +185,7 @@
 
         private System.Windows.Forms.Button buttonRead;
         public System.Windows.Forms.TextBox textBoxDirectionForReading;
-        private System.Windows.Forms.TextBox textBoxDirectionForWritting;
+        public System.Windows.Forms.TextBox textBoxDirectionForWritting;
         private System.Windows.Forms.Button buttonWrite;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.RichTextBox richTextBoxAllThemes;

@@ -8,31 +8,31 @@ namespace SpeechChatAnalytics.Logic
 {
     public class Interaction
     {
-        private string typeOfCommunication;
-        private string sessionID;
-        private string dateOfStartInteraction;
-        private string dateIfAdmissionInteraction;
-        private string dateOfStartProcessing;
-        private string dateOfFinishProcessing;
-        private string chatDurationGeneral;
-        private string chatDurationWithOperator;
-        private string clientNumber;
-        private string clientID;
-        private string botPresence;
-        private string operatorRole;
-        private string operatorSiabelLogin;
-        private string operatorGenesisLogin;
-        private string operatorFCs;
-        private string operatorGroupe;
-        private string apexUnit;
-        private string clientWaitingDuration;
-        private string operatorFirstReaction;
-        private string durationLastMessage;
-        private string operatorAverageTimeAnswer;
-        private string clientAverageTimeAnswer;
-        private string assessmentOfOperator;
-        private string assessmentCommentary;
-        private string textOfInteraction;
+        public string typeOfCommunication;
+        public string sessionID;
+        public string dateOfStartInteraction;
+        public string dateIfAdmissionInteraction;
+        public string dateOfStartProcessing;
+        public string dateOfFinishProcessing;
+        public string chatDurationGeneral;
+        public string chatDurationWithOperator;
+        public string clientNumber;
+        public string clientID;
+        public string botPresence;
+        public string operatorRole;
+        public string operatorSiabelLogin;
+        public string operatorGenesisLogin;
+        public string operatorFCs;
+        public string operatorGroupe;
+        public string apexUnit;
+        public string clientWaitingDuration;
+        public string operatorFirstReaction;
+        public string durationLastMessage;
+        public string operatorAverageTimeAnswer;
+        public string clientAverageTimeAnswer;
+        public string assessmentOfOperator;
+        public string assessmentCommentary;
+        public string textOfInteraction;
 
         public Interaction(string typeOfCommunication, string sessionID, string dateOfStartInteraction, 
             string dateIfAdmissionInteraction, string dateOfStartProcessing, string dateOfFinishProcessing, 

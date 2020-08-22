@@ -52,9 +52,11 @@
     <Compile Include="GUI\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Logic\Interaction.cs" />
     <Compile Include="Logic\Reader.cs" />
     <Compile Include="Logic\Program.cs" />
     <Compile Include="Logic\Theme.cs" />
+    <Compile Include="Logic\Writer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="GUI\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>

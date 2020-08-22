@@ -15,6 +15,8 @@ namespace SpeechChatAnalytics.GUI
 {
     class Reader
     {
+        private string path;
+        private string selectedThemes;
         private _Application excel;
         private Workbook wb;
         private Worksheet ws;
@@ -25,19 +27,21 @@ namespace SpeechChatAnalytics.GUI
         MainForm form;
 
 
-        public Reader(MainForm form)
+        public Reader(MainForm form, string path, string selectedThemes)
         {
             excel = new _Excel.Application();
             listOfThemesAndRelevantWords = new List<Theme>();
             results = new Queue<Interaction>();
+            this.path = path;
             this.form = form;
+            this.selectedThemes = selectedThemes;
         }
 
-        private void OpenExcel()
+        public void OpenExcel()
         {
             try
             {
-                wb = excel.Workbooks.Open(form.textBoxDirectionForReading.Text);
+                wb = excel.Workbooks.Open(path);
                 ws = wb.Worksheets[1];
                 lastCell = excel.Cells.SpecialCells(_Excel.XlCellType.xlCellTypeLastCell);
                 list = new string[lastCell.Column,lastCell.Row];
@@ -48,7 +52,7 @@ namespace SpeechChatAnalytics.GUI
             }
         }
 
-        private void ReadExcel()
+        public void ReadExcel()
         {
             try
             {
@@ -64,10 +68,10 @@ namespace SpeechChatAnalytics.GUI
                                 results.Enqueue(new Interaction(
                                     ws.Cells[i,1].Text.ToString(),
                                     ws.Cells[i, 2].Text.ToString(),
-                                    Convert.ToDateTime(ws.Cells[i, 3].Text.ToString()),
-                                    Convert.ToDateTime(ws.Cells[i, 4].Text.ToString()),
-                                    Convert.ToDateTime(ws.Cells[i, 5].Text.ToString()),
-                                    Convert.ToDateTime(ws.Cells[i, 6].Text.ToString()),
+                                    ws.Cells[i, 3].Text.ToString(),
+                                    ws.Cells[i, 4].Text.ToString(),
+                                    ws.Cells[i, 5].Text.ToString(),
+                                    ws.Cells[i, 6].Text.ToString(),
                                     ws.Cells[i, 7].Text.ToString(),
                                     ws.Cells[i, 8].Text.ToString(),
                                     ws.Cells[i, 9].Text.ToString(),
@@ -104,7 +108,7 @@ namespace SpeechChatAnalytics.GUI
             }
         }
 
-        private void AnalyseThemes()
+        public void AnalyseThemes()
         {
             StringBuilder theme = new StringBuilder();
             StringBuilder neededPhrase = new StringBuilder();
@@ -112,35 +116,35 @@ namespace SpeechChatAnalytics.GUI
             bool keyWord = false;
             List<string> listOfNeededPhrases = new List<string>();
 
-            for (int i = 0; i < form.richTextBoxSelectedThemes.Text.Length; i++)
+            for (int i = 0; i < selectedThemes.Length; i++)
             {
-                if (form.richTextBoxSelectedThemes.Text[i] == '>')
+                if (selectedThemes[i] == '>')
                 {
                     keyTheme = true;
                     continue;
                 }
-                if (form.richTextBoxSelectedThemes.Text[i] == '<')
+                if (selectedThemes[i] == '<')
                 {
                     keyTheme = false;
                     continue;
                 }
                 if (keyTheme)
                 {
-                    theme.Append(form.richTextBoxSelectedThemes.Text[i]);
+                    theme.Append(selectedThemes[i]);
                     continue;
                 }
-                if ((form.richTextBoxSelectedThemes.Text[i] == '\n') && (form.richTextBoxSelectedThemes.Text[i - 1] == '<'))
+                if ((selectedThemes[i] == '\n') && (selectedThemes[i - 1] == '<'))
                 {
                     keyWord = true;
                     continue;
                 }
-                if (form.richTextBoxSelectedThemes.Text[i] == ',')
+                if (selectedThemes[i] == ',')
                 {
                     listOfNeededPhrases.Add(neededPhrase.ToString());
                     neededPhrase.Clear();
                     continue;
                 }
-                if (form.richTextBoxSelectedThemes.Text[i] == '.')
+                if (selectedThemes[i] == '.')
                 {
                     keyWord = false;
                     listOfNeededPhrases.Add(neededPhrase.ToString());
@@ -151,7 +155,7 @@ namespace SpeechChatAnalytics.GUI
                 }
                 if (keyWord)
                 {
-                    neededPhrase.Append(form.richTextBoxSelectedThemes.Text[i]);
+                    neededPhrase.Append(selectedThemes[i]);
                     continue;
                 }
             }
@@ -164,14 +168,9 @@ namespace SpeechChatAnalytics.GUI
             return false;
         }
 
-        private void SendResult()
+        public void SendResult()
         {
             form.results = results;
-        }
-
-        public void Run()
-        {
-
         }
     }
 }
