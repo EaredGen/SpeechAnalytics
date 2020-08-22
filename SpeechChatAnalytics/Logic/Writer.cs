@@ -1,78 +1,65 @@
 ﻿using OfficeOpenXml;
-using System.IO;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SpeechChatAnalytics.Logic;
+using System.Windows.Forms;
+using System.Windows.Forms.Design;
 
-namespace SpeechChatAnalytics.GUI
+namespace SpeechChatAnalytics.Logic
 {
+    delegate void EndNotification();
     class Writer
     {
-        private MainForm form;
-
-        public Writer(MainForm form)
+        private event SetValuesForAppropriateProgressBar setValuesForWriterProgressBar;
+        private event EndNotification SentResultOfWriting;
+        private event PerformStep performStep;
+        public Writer(ref List<List<string>> result, string path, EndNotification endNotification, 
+            SetValuesForAppropriateProgressBar setValuesForWriterProgressBar, PerformStep performStep)
         {
-            this.form = form;
-            this.form.progressBar.Value = 0;
-            Write();
+            this.performStep = performStep;
+            this.setValuesForWriterProgressBar = setValuesForWriterProgressBar;
+            SentResultOfWriting = endNotification;
+            CreateExcelFile(ref result,path);
         }
 
-        private void Write()
+        private void CreateExcelFile(ref List<List<string>> result, string path)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            FileInfo fileInfo = new FileInfo(form.textBoxDirectionForWritting.Text);
-
-            using (ExcelPackage ep = new ExcelPackage(fileInfo))
+            using (ExcelPackage excelPackage = new ExcelPackage())
             {
-                form.progressBar.Minimum = 0;
-                form.progressBar.Maximum = form.results.Count;
-                form.progressBar.Step = 1;
-                Interaction interaction;
-                ExcelWorksheet ew = ep.Workbook.Worksheets[0];
-                int counter = 2;
-                while (form.results.Count != 0)
+                ExcelWorksheet worksheet = excelPackage.Workbook.Worksheets.Add("Sheet 2");
+                Write(ref result, excelPackage.Workbook.Worksheets[0]);
+                FileInfo fi = new FileInfo(path);
+                excelPackage.SaveAs(fi);
+                SentResultOfWriting();
+            }
+        }
+
+        private void Write(ref List<List<string>> result, ExcelWorksheet excelWorksheet)
+        {
+            try
+            {
+                setValuesForWriterProgressBar(this, new Entities.ProgressBarArguments(0, result.Count, 0, 1));
+            }
+            catch (NullReferenceException)
+            {
+                MessageBox.Show("Выбран неверный Excel файл, программа будет закрыта. Необходимо" +
+                    "выбрать Excel файл содержащий выгрузку по чатам.");
+                throw;
+            }
+            int rowNumber = 1;
+            foreach (var row in result)
+            {
+                performStep(this);
+                int columnNumber = 0;
+                while (columnNumber < 26)
                 {
-                    try
-                    {
-                        interaction = form.results.Dequeue();
-                        ew.Cells[counter, 1].Value = String.Format(interaction.nameOfTheme);
-                        ew.Cells[counter, 2].Value = String.Format(interaction.typeOfCommunication);
-                        ew.Cells[counter, 3].Value = String.Format(interaction.sessionID);
-                        ew.Cells[counter, 4].Value = String.Format(interaction.dateOfStartInteraction);
-                        ew.Cells[counter, 5].Value = String.Format(interaction.dateOfAdmissionInteraction);
-                        ew.Cells[counter, 6].Value = String.Format(interaction.dateOfStartProcessing);
-                        ew.Cells[counter, 7].Value = String.Format(interaction.dateOfFinishProcessing);
-                        ew.Cells[counter, 8].Value = String.Format(interaction.chatDurationGeneral);
-                        ew.Cells[counter, 9].Value = String.Format(interaction.chatDurationWithOperator);
-                        ew.Cells[counter, 10].Value = String.Format(interaction.clientNumber);
-                        ew.Cells[counter, 11].Value = String.Format(interaction.clientID);
-                        ew.Cells[counter, 12].Value = String.Format(interaction.botPresence);
-                        ew.Cells[counter, 13].Value = String.Format(interaction.operatorRole);
-                        ew.Cells[counter, 14].Value = String.Format(interaction.operatorSiabelLogin);
-                        ew.Cells[counter, 15].Value = String.Format(interaction.operatorGenesisLogin);
-                        ew.Cells[counter, 16].Value = String.Format(interaction.operatorFCs);
-                        ew.Cells[counter, 17].Value = String.Format(interaction.operatorGroupe);
-                        ew.Cells[counter, 18].Value = String.Format(interaction.apexUnit);
-                        ew.Cells[counter, 19].Value = String.Format(interaction.clientWaitingDuration);
-                        ew.Cells[counter, 20].Value = String.Format(interaction.operatorFirstReaction);
-                        ew.Cells[counter, 21].Value = String.Format(interaction.durationLastMessage);
-                        ew.Cells[counter, 22].Value = String.Format(interaction.operatorAverageTimeAnswer);
-                        ew.Cells[counter, 23].Value = String.Format(interaction.clientAverageTimeAnswer);
-                        ew.Cells[counter, 24].Value = String.Format(interaction.assessmentOfOperator);
-                        ew.Cells[counter, 25].Value = String.Format(interaction.assessmentCommentary);
-                        ew.Cells[counter, 26].Value = String.Format(interaction.textOfInteraction);
-                        counter++;
-                        form.progressBar.PerformStep();
-                    }
-                    catch (Exception ex)
-                    {
-                        continue;
-                    }
+                    excelWorksheet.Cells[rowNumber,columnNumber+1].Value = String.Format(row[columnNumber]);
+                    columnNumber++;
                 }
-                ep.SaveAs(fileInfo);
+                rowNumber++;
             }
         }
 

@@ -1,5 +1,5 @@
-﻿using SpeechChatAnalytics.GUI;
-using SpeechChatAnalytics.Logic;
+﻿using SpeechChatAnalytics.Logic;
+using SpeechChatAnalytics.Logic.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,34 +15,25 @@ namespace SpeechChatAnalytics
 {
     public partial class MainForm : Form
     {
-        Process thisProcess;
-        public Queue<Interaction> results;
-        private OpenFileDialog ofd;
+        private OpenFileDialog openFileDiaolog;
+        private Process process;
         public MainForm()
         {
-            this.thisProcess = Process.GetCurrentProcess();
-            thisProcess.PriorityClass = ProcessPriorityClass.High;
+            this.process = Process.GetCurrentProcess();
+            this.process.PriorityClass = ProcessPriorityClass.High;
+
             InitializeComponent();
-            ofd = new OpenFileDialog();
+            openFileDiaolog = new OpenFileDialog();
             richTextBoxAllThemes.Text = Properties.Settings.Default.Themes;
         }
 
         private void buttonChooseDirection_MouseClick(object sender, MouseEventArgs e)
         {
-            if (ofd.ShowDialog() == DialogResult.OK)
+            if (openFileDiaolog.ShowDialog() == DialogResult.OK)
             {
-                if (sender == buttonChooseReadingDirection)
-                {
-                    textBoxDirectionForReading.Text = ofd.FileName;
+                    textBoxDirectionForReading.Text = openFileDiaolog.FileName;
                     if (textBoxDirectionForReading.Text != "")
                         buttonRead.Enabled = true;
-                }
-                else
-                {
-                    textBoxDirectionForWritting.Text = ofd.FileName;
-                    if (textBoxDirectionForWritting.Text != "")
-                        buttonWrite.Enabled = true;
-                }
             }
         }
 
@@ -66,15 +57,58 @@ namespace SpeechChatAnalytics
 
         }
 
-        private void buttonRead_MouseClick(object sender, MouseEventArgs e)
+        private void buttonRead_Click(object sender, EventArgs e)
         {
-            Reader reader = new Reader(this);
-            MessageBox.Show($"Кол-во по тематике {results.Count}");
+            Controller controller = new Controller(textBoxDirectionForReading.Text,richTextBoxSelectedThemes.Text,
+                ShowResultOfWriting, SetEventValues, PerformStep);
         }
 
-        private void buttonWrite_MouseClick(object sender, MouseEventArgs e)
+        private void ShowResultOfWriting()
         {
-            Writer writer = new Writer(this);
+            MessageBox.Show("Запись успешно завершена");
         }
+
+        private void SetEventValues(object sendler, ProgressBarArguments args)
+        {
+            if (sendler is DataReceiver)
+            {
+                progressBarReading.Minimum = args.MinValue;
+                progressBarReading.Maximum = args.MaxValue;
+                progressBarReading.Value = args.CurrentValue;
+                progressBarReading.Step = args.SizeOfStep;
+            }
+            if (sendler is Analyzer)
+            {
+                progressBarAnalyze.Minimum = args.MinValue;
+                progressBarAnalyze.Maximum = args.MaxValue;
+                progressBarAnalyze.Value = args.CurrentValue;
+                progressBarAnalyze.Step = args.SizeOfStep;
+            }
+            if (sendler is Writer)
+            {
+                progressBarWriting.Minimum = args.MinValue;
+                progressBarWriting.Maximum = args.MaxValue;
+                progressBarWriting.Value = args.CurrentValue;
+                progressBarWriting.Step = args.SizeOfStep;
+            }
+        }
+
+        private void PerformStep(object sendler)
+        {
+            if (sendler is DataReceiver)
+            {
+                progressBarReading.PerformStep();
+            }
+            if (sendler is Analyzer)
+            {
+                progressBarAnalyze.PerformStep();
+            }
+            if(sendler is Writer)
+            {
+                progressBarWriting.PerformStep();
+            }
+        }
+
+
     }
 }
